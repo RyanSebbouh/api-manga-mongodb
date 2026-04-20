@@ -7,9 +7,6 @@ app = Flask(__name__)
 client = MongoClient("mongodb://localhost:27017/")
 db = client["manga_db"]
 
-# ─────────────────────────────────────────
-# Données initiales (run une seule fois)
-# ─────────────────────────────────────────
 def seed():
     if db.mangas.count_documents({}) == 0:
         db.mangas.insert_many([
@@ -31,16 +28,12 @@ def seed():
 
 seed()
 
-# ─────────────────────────────────────────
-# Helper : convertit ObjectId en string
-# ─────────────────────────────────────────
+
 def format_doc(doc):
     doc["_id"] = str(doc["_id"])
     return doc
 
-# ─────────────────────────────────────────
-# POST /items  — créer un manga
-# ─────────────────────────────────────────
+
 @app.route("/items", methods=["POST"])
 def create_manga():
     data = request.json
@@ -49,9 +42,7 @@ def create_manga():
     result = db.mangas.insert_one(data)
     return jsonify({"message": "Manga créé", "id": str(result.inserted_id)}), 201
 
-# ─────────────────────────────────────────
-# GET /items  — liste tous les mangas (paginée)
-# ─────────────────────────────────────────
+
 @app.route("/items", methods=["GET"])
 def get_mangas():
     page  = int(request.args.get("page", 1))
@@ -60,9 +51,7 @@ def get_mangas():
     mangas = list(db.mangas.find().skip(skip).limit(limit))
     return jsonify([format_doc(m) for m in mangas])
 
-# ─────────────────────────────────────────
-# GET /items/:id  — lire un manga
-# ─────────────────────────────────────────
+
 @app.route("/items/<id>", methods=["GET"])
 def get_manga(id):
     try:
@@ -73,11 +62,7 @@ def get_manga(id):
         return jsonify({"erreur": "Manga introuvable"}), 404
     return jsonify(format_doc(manga))
 
-# ─────────────────────────────────────────
-# GET /search?keyword=...&genre=...&note_min=...
-# Recherche sur titre + description
-# Filtre additionnel : genre et/ou note minimale
-# ─────────────────────────────────────────
+
 @app.route("/search", methods=["GET"])
 def search_manga():
     keyword  = request.args.get("keyword", "")
