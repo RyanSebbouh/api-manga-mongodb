@@ -88,6 +88,6 @@ def search_manga():
         return jsonify({"message": "Aucun résultat"}), 404
     return jsonify([format_doc(m) for m in resultats])
 
-# ─────────────────────────────────────────
+
 if __name__ == "__main__":
     app.run(debug=True)
